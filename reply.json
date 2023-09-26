@@ -1,0 +1,14 @@
+{
+  "id": "6",
+  "content": "How's this gon look? Once again!!! Trying something new",
+  "createdAt": "2 days ago",
+  "score": 0,
+  "replyingTo": "ramsesmiron",
+  "user": {
+    "image": {
+      "png": "./images/avatars/image-amyrobson.png",
+      "webp": "./images/avatars/image-amyrobson.png"
+    },
+    "username": "ramsesmiron"
+  }
+}
