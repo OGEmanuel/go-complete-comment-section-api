@@ -41,11 +41,11 @@ type CommentSection struct {
 	Comments    []Comment `json:"comments"`
 }
 
-var replyAmyrobson = []Reply{}
+var emptyRely = []Reply{}
 
 var imageAmyrobson = Image{
-	PNG:  "./images/avatars/image-amyrobson.png",
-	WEBP: "./images/avatars/image-amyrobson.png",
+	PNG:  "https://i.ibb.co/wJ81pfW/image-amyrobson.png",
+	WEBP: "https://i.ibb.co/wJ81pfW/image-amyrobson.png",
 }
 
 var userAmyrobson = User{
@@ -68,13 +68,13 @@ var replyMaxblagun = []Reply{
 		CreatedAt:  "2 days ago",
 		Score:      2,
 		ReplyingTo: "ramsesmiron",
-		User:       userRamsesmiron,
+		User:       userJuliusomo,
 	},
 }
 
 var imageMaxblagun = Image{
-	PNG:  "./images/avatars/image-amyrobson.png",
-	WEBP: "./images/avatars/image-amyrobson.png",
+	PNG:  "https://i.ibb.co/tYLc7Jv/image-maxblagun.png",
+	WEBP: "https://i.ibb.co/tYLc7Jv/image-maxblagun.png",
 }
 
 var userMaxblagun = User{
@@ -83,8 +83,8 @@ var userMaxblagun = User{
 }
 
 var imageRamsesmiron = Image{
-	PNG:  "./images/avatars/image-amyrobson.png",
-	WEBP: "./images/avatars/image-amyrobson.png",
+	PNG:  "https://i.ibb.co/Y28dxbN/image-ramsesmiron.png",
+	WEBP: "https://i.ibb.co/Y28dxbN/image-ramsesmiron.png",
 }
 
 var userRamsesmiron = User{
@@ -93,8 +93,8 @@ var userRamsesmiron = User{
 }
 
 var imageJuliusomo = Image{
-	PNG:  "./images/avatars/image-amyrobson.png",
-	WEBP: "./images/avatars/image-amyrobson.png",
+	PNG:  "https://i.ibb.co/3hVx9Cw/image-juliusomo.png",
+	WEBP: "https://i.ibb.co/3hVx9Cw/image-juliusomo.png",
 }
 
 var userJuliusomo = User{
@@ -109,7 +109,7 @@ var commentsList = []Comment{
 		CreatedAt: "1 month ago",
 		Score:     12,
 		User:      userAmyrobson,
-		Replies:   replyAmyrobson,
+		Replies:   emptyRely,
 	},
 	{
 		ID:        "2",
@@ -154,20 +154,23 @@ func deleteReply(c *gin.Context) {
 	}
 
 	Comment.Replies = append(Comment.Replies[:index], Comment.Replies[index+1:]...)
-	c.IndentedJSON(http.StatusOK, Comment)
+	c.IndentedJSON(http.StatusOK, Comment.Replies)
 }
 
 func deleteComment(c *gin.Context) {
-	var index int
 	id := c.Param("id")
 
+	var index int = -1
 	for i, com := range commentsList {
 		if id == com.ID {
 			index = i
-		} else {
-			c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Comment not found."})
-			return
+			break // Break the loop when the comment is found
 		}
+	}
+
+	if index == -1 {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Comment not found."})
+		return
 	}
 
 	commentsList = append(commentsList[:index], commentsList[index+1:]...)
@@ -371,11 +374,20 @@ func getCommentById(id string) (*Comment, error) {
 func addComment(c *gin.Context) {
 	var newComment Comment
 
+	// Unmarshal the request body into newComment
 	if err := c.BindJSON(&newComment); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	// Initialize commentsList if it's nil
+	if commentsList == nil {
+		commentsList = make([]Comment, 0)
+	}
+
+	// Append the newComment to commentsList
 	commentsList = append(commentsList, newComment)
+
 	c.IndentedJSON(http.StatusCreated, newComment)
 }
 
@@ -392,7 +404,6 @@ func main() {
 
 	config := cors.DefaultConfig()
 	config.AllowOrigins = []string{"*"}
-	// config.AllowAllOrigins = true
 	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}
 	router.Use(cors.New(config))
 
